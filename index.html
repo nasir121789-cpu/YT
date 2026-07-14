@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium TV Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ডিফল্ট থিম ভেরিয়েবল */
+        :root {
+            --bg-color: #09090b;
+            --card-bg: #16161a;
+            --accent-color: #ff0055;
+            --nav-bg: #0f0f14;
+            --text-color: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* 🔒 সাইটে লেখা কপি ও সিলেক্ট করা সম্পূর্ণ বন্ধ */
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* ⚡ প্রিমিয়াম ক্লিক অ্যানিমেশন */
+        button, .video-card, .category-chip, .admin-nav-btn, .category-item, .social-menu-item, .layout-btn {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        button:active, .video-card:active, .category-chip:active, .admin-nav-btn:active, .category-item:active, .social-menu-item:active, .layout-btn:active {
+            transform: scale(0.92);
+        }
+
+        /* নোটিশ বার */
+        #notice-bar {
+            background-color: var(--accent-color);
+            color: #fff;
+            padding: 8px 20px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* স্টিকি হেডার */
+        header {
+            background-color: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1300px;
+            margin: 0 auto;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-container {
+            flex-grow: 1;
+            max-width: 450px;
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+            user-select: text !important;
+        }
+
+        .search-container button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .right-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* লেআউট পরিবর্তন বাটন ও মেনু বাটন */
+        .layout-btn, .menu-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .layout-btn:hover, .menu-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+
+        /* 🏷️ ওপরে স্ক্রলিং ক্যাটাগরি বার */
+        .category-scroll-container {
+            max-width: 1300px;
+            margin: 15px auto 0 auto;
+            padding: 0 20px;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        .category-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+        .category-chip {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 8px 18px;
+            border-radius: 20px;
+            margin-right: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .category-chip.active, .category-chip:hover {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+        }
+
+        /* সাইডবার */
+        .sidebar {
+            position: fixed;
+            top: 0; right: -300px;
+            width: 280px; height: 100%;
+            background: #0f0f13;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.8);
+            z-index: 200;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .sidebar.open { right: 0; }
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .category-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 12px 15px;
+            border-radius: 8px;
+            text-align: left;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-item.active, .category-item:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+
+        /* 🌐 সোশ্যাল মিডিয়া সেকশন */
+        .sidebar-social-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            margin-top: 15px;
+        }
+        .sidebar-social-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .social-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .social-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            border-radius: 6px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .social-menu-item:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        /* ভিডিও গ্রিড মেইন কন্টেইনার */
+        .main-content {
+            max-width: 1300px;
+            margin: 20px auto 40px auto;
+            padding: 0 20px;
+        }
+
+        .grid-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 12px;
+        }
+
+        /* ==========================================
+        * 📊 ডাইনামিক লেআউট সিস্টেম (১-কলম ও ২-কলম)
+        * ========================================== */
+        .video-grid {
+            display: grid;
+            gap: 25px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* ডাবল কলাম ভিউ (ডিফল্ট ডেস্কটপ / মোবাইলে ২ কলাম) */
+        .video-grid.layout-double {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+
+        /* সিঙ্গেল কলাম ভিউ (ইউটিউব ফিডের মতো বড় ১ কলাম) */
+        .video-grid.layout-single {
+            grid-template-columns: 1fr;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 600px) {
+            .video-grid.layout-double {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            .video-grid.layout-single {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .video-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+        }
+
+        .thumbnail-box {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            background: #222;
+        }
+
+        .thumbnail-box img {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+        }
+
+        .video-details { padding: 15px; }
+
+        .video-title-text {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        #loading { text-align: center; color: var(--text-secondary); margin: 40px 0; }
+        .btn-center { text-align: center; margin: 40px 0; }
+
+        #load-more-btn {
+            background-color: transparent;
+            color: var(--text-color);
+            border: 2px solid var(--accent-color);
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* ==========================================
+        * 📺 প্রিমিয়াম ইউটিউব-স্টাইল প্রটেক্টেড প্লেয়ার
+        * ========================================== */
+        .player-page-view {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000;
+            z-index: 500;
+            overflow-y: auto;
+            color: #fff;
+        }
+
+        .player-header {
+            background: #0f0f14;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-btn {
+            background: var(--accent-color);
+            color: white; border: none;
+            padding: 8px 16px; border-radius: 20px;
+            font-weight: 600; font-size: 14px;
+        }
+
+        .player-layout {
+            max-width: 1300px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 2.2fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .player-layout { grid-template-columns: 1fr; }
+        }
+
+        .iframe-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .iframe-wrapper iframe { width: 100%; height: 100%; border: none; }
+
+        /* অ্যান্টি-ক্লিকআউট প্রোটেকশন ওভারলে */
+        .block-layer-top { position: absolute; top: 0; left: 0; width: 100%; height: 60px; background: transparent; z-index: 10; }
+        .block-layer-bottom-right { position: absolute; bottom: 0; right: 0; width: 120px; height: 50px; background: transparent; z-index: 10; }
+        .block-layer-bottom-left { position: absolute; bottom: 0; left: 0; width: 100px; height: 40px; background: transparent; z-index: 10; }
+
+        .played-video-title { font-size: 20px; font-weight: 700; margin: 15px 0; line-height: 1.4; }
+        .related-section-title {
+            font-size: 16px; font-weight: 700; margin-bottom: 15px; color: var(--text-secondary);
+            border-bottom: 2px solid var(--accent-color); padding-bottom: 5px; display: inline-block;
+        }
+
+        .related-video-list { display: flex; flex-direction: column; gap: 15px; }
+        .related-card { display: flex; gap: 12px; background: #121216; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); padding: 8px; }
+        .related-thumb { width: 120px; aspect-ratio: 16/9; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+        .related-details { display: flex; flex-direction: column; justify-content: center; }
+        .related-title {
+            font-size: 13px; font-weight: 600; line-height: 1.3; margin: 0;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        /* ==========================================
+        * 👑 ফুলস্ক্রিন ড্যাশবোর্ড পেজ
+        * ========================================== */
+        .admin-page-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #09090b; z-index: 99999; color: #e4e4e7;
+        }
+
+        .admin-container { display: flex; width: 100%; height: 100%; }
+
+        .admin-nav {
+            width: 260px; background: #14141b; border-right: 1px solid #27272a;
+            display: flex; flex-direction: column; padding: 20px;
+        }
+
+        .admin-nav h2 { font-size: 20px; color: #ff0055; margin-bottom: 30px; }
+
+        .admin-nav-btn {
+            background: none; border: none; color: #a1a1aa; padding: 14px 18px;
+            text-align: left; font-size: 15px; border-radius: 8px; display: flex;
+            align-items: center; gap: 12px; margin-bottom: 8px; width: 100%;
+        }
+
+        .admin-nav-btn.active, .admin-nav-btn:hover { background: #27272a; color: #fff; }
+
+        .admin-main { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .admin-section { display: none; }
+        .admin-section.active { display: block; }
+
+        .admin-card { background: #14141b; border: 1px solid #27272a; border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #a1a1aa; }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 11px; background: #27272a; border: 1px solid #3f3f46;
+            border-radius: 6px; color: white; outline: none;
+            user-select: text !important; -webkit-user-select: text !important;
+        }
+
+        .save-btn {
+            background: #ff0055; color: white; border: none; padding: 12px 28px;
+            border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .save-btn:hover { background: #e0004c; }
+
+        .admin-item-list { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 10px; margin-top: 15px; max-height: 180px; overflow-y: auto; }
+        .admin-list-row { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #27272a; align-items: center; }
+        .delete-btn { background: none; border: none; color: #ff3333; cursor: pointer; }
+
+        .login-screen { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; }
+        .login-box { background: #14141b; padding: 40px; border-radius: 16px; border: 1px solid #27272a; width: 100%; max-width: 380px; text-align: center; }
+        .overlay-bg { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 150; }
+    </style>
+</head>
+<body>
+
+    <!-- নোটিশ বার -->
+    <div id="notice-bar"><marquee scrollamount="5" id="notice-text">লোডিং...</marquee></div>
+
+    <!-- হেডার লোগো এবং সার্চ বার -->
+    <header>
+        <div class="nav-container">
+            <!-- 🤫 লোগোটিতে ৫ বার ক্লিক করলে এডমিন প্যানেল খুলবে -->
+            <div class="logo" onclick="handleSecretClicks()"><i class="fa-solid fa-play"></i> HUB TV</div>
+            
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="যেকোনো ভিডিও সার্চ করুন...">
+                <button onclick="searchVideos()"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <div class="right-actions">
+                <!-- 🖥️ ইউটিউব স্টাইল লেআরট মোড চেঞ্জার (১-কলম বা ২-কলম) -->
+                <button class="layout-btn" id="layout-toggle-btn" onclick="toggleLayout()" title="লেআউট পরিবর্তন করুন">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                </button>
+                <button class="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 🏷️ ওপরে স্ক্রলিং ক্যাটাগরি বার -->
+    <div class="category-scroll-container" id="top-category-bar">
+        <button class="category-chip active" onclick="changeCategory('', this)">সব ভিডিও</button>
+    </div>
+
+    <!-- সাইডবার ক্যাটাগরি ও কাস্টম সোশ্যাল মেনু -->
+    <div class="overlay-bg" id="overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">মেনু ক্যাটাগরি</h3>
+                <button class="menu-btn" onclick="toggleSidebar()">&times;</button>
+            </div>
+            <div class="category-list" id="sidebar-categories">
+                <button class="category-item active" onclick="changeCategory('', this)">
+                    <i class="fa-solid fa-house"></i> সব ভিডিও
+                </button>
+            </div>
+        </div>
+
+        <!-- 🌐 কাস্টম সোশ্যাল মিডিয়া সেকশন -->
+        <div class="sidebar-social-section">
+            <h4>সোশ্যাল মিডিয়া</h4>
+            <div class="social-menu-list" id="sidebar-social-menu">
+                <!-- ডাইনামিক বাটন এখানে আসবে -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ভিডিও গ্রিড সেকশন -->
+    <div class="main-content">
+        <h2 id="grid-header" class="grid-title">সব ভিডিও</h2>
+        <div id="video-container" class="video-grid layout-double"></div>
+        <div id="loading">লোড হচ্ছে... ফায়ারবেস কনফিগারেশন সেট করুন।</div>
+        
+        <div class="btn-center">
+            <button id="load-more-btn" onclick="loadMore()">আরও ভিডিও দেখুন</button>
+        </div>
+    </div>
+
+    <!-- 📺 সুরক্ষিত ইউটিউব-স্টাইল প্লেয়ার পেজ -->
+    <div id="custom-player-page" class="player-page-view">
+        <div class="player-header">
+            <div style="font-size:18px; font-weight:bold; color:var(--accent-color);"><i class="fa-solid fa-play"></i> HUB PLAYER</div>
+            <button class="back-btn" onclick="closeVideoPlayer()"><i class="fa-solid fa-arrow-left"></i> হোমপেজে ফিরুন</button>
+        </div>
+        <div class="player-layout">
+            <div>
+                <div class="iframe-wrapper">
+                    <div id="iframe-target" style="width:100%; height:100%;"></div>
+                    <!-- 🛡️ অ্যান্টি-ক্লিকআউট ওভারলে লেয়ার -->
+                    <div class="block-layer-top"></div>
+                    <div class="block-layer-bottom-right"></div>
+                    <div class="block-layer-bottom-left"></div>
+                </div>
+                <h1 id="playing-title" class="played-video-title">ভিডিও টাইটেল লোড হচ্ছে...</h1>
+            </div>
+            <div>
+                <div class="related-section-title">সম্পর্কিত ভিডিও</div>
+                <div class="related-video-list" id="related-videos-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 👑 ড্যাশবোর্ড পেজ -->
+    <div id="admin-page" class="admin-page-overlay">
+        
+        <!-- লগইন স্ক্রিন -->
+        <div id="admin-auth-screen" class="login-screen">
+            <div class="login-box">
+                <h2 style="color:#ff0055; margin-top:0; font-size: 26px;">প্যানেল ভেরিফিকেশন</h2>
+                <div class="form-group" style="text-align:left;">
+                    <label>এডমিন পাসওয়ার্ড দিন</label>
+                    <input type="password" id="admin-password" placeholder="••••••••">
+                </div>
+                <button class="save-btn" style="width:100%; justify-content:center;" onclick="verifyAdminPassword()">লগইন ড্যাশবোর্ড</button>
+                <button class="admin-nav-btn" style="margin: 15px auto 0 auto; padding:5px 10px;" onclick="closeAdminPage()">← সাইটে ফিরুন</button>
+            </div>
+        </div>
+
+        <!-- মেইন ড্যাশবোর্ড ইন্টারফেস -->
+        <div id="admin-dashboard-screen" class="admin-container" style="display:none;">
+            <!-- বামদিকের মেনুবার -->
+            <div class="admin-nav">
+                <h2><i class="fa-solid fa-shield-halved"></i> HUB ADMIN</h2>
+                <button class="admin-nav-btn active" onclick="switchAdminTab('tab-ads', this)"><i class="fa-solid fa-rectangle-ad"></i> অ্যাড সেটিং (Ad Link)</button>
+                <button class="admin-nav-btn" onclick="switchAdminTab('tab-notice', this)"><i class="fa-solid fa-bullhorn"></i> নোটিশ বোর্ড</button>
+                <button class="admin-nav-btn" onclick="switchAdminTab('tab-theme', this)"><i class="fa-solid fa-code"></i> HEX থিম কালার</button>
+                <button class="admin-nav-btn" onclick="switchAdminTab('tab-cats', this)"><i class="fa-solid fa-folder-plus"></i> ক্যাটাগরি ম্যানেজমেন্ট</button>
+                <button class="admin-nav-btn" onclick="switchAdminTab('tab-social', this)"><i class="fa-solid fa-circle-nodes"></i> সোশ্যাল মিডিয়া</button>
+                <div style="flex-grow:1;"></div>
+                <button class="admin-nav-btn" style="color:#ff3333; font-weight:bold;" onclick="closeAdminPage()"><i class="fa-solid fa-door-open"></i> এক্সিট প্যানেল</button>
+            </div>
+
+            <!-- ডানদিকের কন্ট্রোল এরিয়া -->
+            <div class="admin-main">
+                
+                <!-- 🎯 ট্যাব ১: একদম আলাদা ডেডিকেটেড অ্যাড সেটিং -->
+                <div id="tab-ads" class="admin-section active">
+                    <div class="admin-card">
+                        <h3><i class="fa-solid fa-link"></i> Adsterra Direct Link Option</h3>
+                        <p style="color:#a1a1aa; font-size:13px; margin-bottom:15px;">এখানে আপনার ডিরেক্ট লিংক দিন। লিংক সেভ করার পর ইউজারের প্রথম ক্লিকে অ্যাড নতুন ট্যাবে খুলবে, দ্বিতীয় ক্লিকে ভিডিও চলবে।</p>
+                        <div class="form-group">
+                            <label>আপনার ডিরেক্ট অ্যাড লিংক (Direct Link)</label>
+                            <input type="text" id="adm-ad-link" placeholder="https://www.highperformanceformat.com/your-code">
+                        </div>
+                        <button class="save-btn" onclick="saveAdLinkOnly()"><i class="fa-solid fa-floppy-disk"></i> অ্যাড লিংক সেভ করুন</button>
+                    </div>
+                </div>
+
+                <!-- ট্যাব ২: নোটিশ বোর্ড -->
+                <div id="tab-notice" class="admin-section">
+                    <div class="admin-card">
+                        <h3><i class="fa-solid fa-bullhorn"></i> টপ নোটিশ বার ব্যানার</h3>
+                        <div class="form-group">
+                            <label>নোটিশ প্রদর্শন</label>
+                            <select id="adm-notice-status">
+                                <option value="show">অন থাকবে (Show)</option>
+                                <option value="hide">বন্ধ থাকবে (Hide)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>নোটিশের টেক্সট</label>
+                            <textarea id="adm-notice-text" rows="3" placeholder="নোটিশে কি টেক্সট দেখাতে চান..."></textarea>
+                        </div>
+                        <button class="save-btn" onclick="saveNoticeSettings()"><i class="fa-solid fa-circle-check"></i> নোটিশ সেভ করুন</button>
+                    </div>
+                </div>
+
+                <!-- ট্যাব ৩: HEX কালার কোড থিম -->
+                <div id="tab-theme" class="admin-section">
+                    <div class="admin-card">
+                        <h3><i class="fa-solid fa-palette"></i> HEX কালার কোড কাস্টমাইজেশন</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label>ব্যাকগ্রাউন্ড কালার কোড</label>
+                                <input type="text" id="thm-bg-code" placeholder="#09090b">
+                            </div>
+                            <div class="form-group">
+                                <label>মেইন অ্যাকসেন্ট কালার কোড</label>
+                                <input type="text" id="thm-accent-code" placeholder="#ff0055">
+                            </div>
+                            <div class="form-group">
+                                <label>ভিডিও কার্ডের ব্যাকগ্রাউন্ড কোড</label>
+                                <input type="text" id="thm-card-code" placeholder="#16161a">
+                            </div>
+                            <div class="form-group">
+                                <label>টপ নেভিগেশন বার কোড</label>
+                                <input type="text" id="thm-nav-code" placeholder="#0f0f14">
+                            </div>
+                        </div>
+                        <button class="save-btn" onclick="saveThemeColors()"><i class="fa-solid fa-wand-magic-sparkles"></i> থিম কোড সেভ করুন</button>
+                    </div>
+                </div>
+
+                <!-- ট্যাব ৪: ক্যাটাগরি যোগ/বাদ -->
+                <div id="tab-cats" class="admin-section">
+                    <div class="admin-card">
+                        <h3>ক্যাটাগরি ম্যানেজমেন্ট</h3>
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <input type="text" id="adm-cat-name" placeholder="যেমন: নতুন নাটক, বাংলা সিনেমা">
+                            <button onclick="addCategory()" class="save-btn" style="background:green;">যোগ করুন</button>
+                        </div>
+                        <div class="admin-item-list" id="adm-cat-list"></div>
+                    </div>
+                </div>
+
+                <!-- ট্যাব ৫: সোশ্যাল মিডিয়া -->
+                <div id="tab-social" class="admin-section">
+                    <div class="admin-card">
+                        <h3>সোশ্যাল মিডিয়া ম্যানেজমেন্ট</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom:15px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>সোশ্যাল মিডিয়ার নাম (ইউজার অ্যাপে যা দেখবে)</label>
+                                <input type="text" id="adm-soc-name" placeholder="যেমন: আমাদের টেলিগ্রাম চ্যানেল">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>সম্পূর্ণ লিংক (URL)</label>
+                                <input type="text" id="adm-soc-url" placeholder="https://t.me/yourchannel">
+                            </div>
+                        </div>
+                        <button class="save-btn" style="width:100%; background:green; justify-content:center;" onclick="addSocial()"><i class="fa-solid fa-plus"></i> নতুন সোশ্যাল বাটন যোগ করুন</button>
+                        <div class="admin-item-list" id="adm-soc-list"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Version 10.8.0 Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // ==========================================
+        // ⚠️ আপনার ফায়ারবেস কনফিগারেশন এখানে বসান
+        // ==========================================
+        const API_KEY = 'AIzaSyDVt9000RSEQbFVavueFUJEdhZSmP6xWWQ'; 
+
+        const firebaseConfig = {
+  apiKey: "AIzaSyDqyRIGT6O1_m7iCR2cDpO_zhXTr0mqG2k",
+  authDomain: "ytvideo-e2b6e.firebaseapp.com",
+  databaseURL: "https://ytvideo-e2b6e-default-rtdb.firebaseio.com",
+  projectId: "ytvideo-e2b6e",
+  storageBucket: "ytvideo-e2b6e.firebasestorage.app",
+  messagingSenderId: "323189508964",
+  appId: "1:323189508964:web:8626fc998886061d184871",
+  measurementId: "G-4T4RGRYLTQ"
+};
+
+        const MASTER_PASSWORD = "adminxyz001836@6271"; 
+        // ==========================================
+
+        let db = null;
+        const isFirebaseActive = (firebaseConfig.apiKey !== "YOUR_API_KEY");
+
+        if(isFirebaseActive) {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        }
+
+        // --- 💾 লোকালস্টোরেজ ফলব্যাক সিস্টেম (১০০% কাজের গ্যারান্টি) ---
+        const localDB = {
+            get: (key, defaultVal) => {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : defaultVal;
+            },
+            set: (key, val) => {
+                localStorage.setItem(key, JSON.stringify(val));
+            }
+        };
+
+        // ডিফল্ট লোকাল ডেটা ইনিশিয়ালাইজেশন
+        let currentAdsterraLink = localDB.get('adsterra_url', '');
+        let noticeData = localDB.get('notice_data', { status: 'show', text: 'আমাদের অফিশিয়াল অ্যাপে আপনাকে স্বাগতম!' });
+        let themeData = localDB.get('theme_data', { bg: '#09090b', accent: '#ff0055', card: '#16161a', nav: '#0f0f14' });
+        let categoryList = localDB.get('categories_list', [
+            { id: "cat_1", name: "বাংলা নাটক" },
+            { id: "cat_2", name: "বাংলা গান" },
+            { id: "cat_3", name: "সিনেমা" }
+        ]);
+        let socialList = localDB.get('socials_list', [
+            { id: "soc_1", name: "আমাদের টেলিগ্রাম চ্যানেল", url: "https://t.me/" }
+        ]);
+
+        let nextPageToken = '';
+        let currentQuery = ''; 
+        let adClickHistory = {}; 
+        let currentLayout = localDB.get('app_layout', 'double'); // 'double' অথবা 'single'
+        let secretClickCount = 0;
+        let secretClickTimer = null;
+
+        const videoContainer = document.getElementById('video-container');
+        const loadingText = document.getElementById('loading');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        const topCategoryBar = document.getElementById('top-category-bar');
+        const sidebarCategories = document.getElementById('sidebar-categories');
+        const sidebarSocialMenu = document.getElementById('sidebar-social-menu');
+        const customPlayerPage = document.getElementById('custom-player-page');
+        const iframeTarget = document.getElementById('iframe-target');
+
+        // লোড হওয়ার সাথে সাথে সবকিছু রেন্ডার করুন
+        window.addEventListener('DOMContentLoaded', () => {
+            applyLayout();
+            applyThemeColors(themeData);
+            renderNotice(noticeData);
+            renderCategories();
+            renderSocialMenu();
+            
+            if(isFirebaseActive) {
+                listenToFirebase();
+            }
+            if(API_KEY !== 'YOUR_YOUTUBE_API_KEY') {
+                fetchVideos();
+            } else {
+                loadingText.innerText = "দয়া করে ফায়ারবেস ও ইউটিউব এপিআই কি কোডে বসান!";
+            }
+        });
+
+        // 🤫 এডমিন প্যানেল ট্র্যাকিং (৫ ক্লিকে ওপেন)
+        function handleSecretClicks() {
+            secretClickCount++;
+            if (secretClickCount === 1) {
+                secretClickTimer = setTimeout(() => { secretClickCount = 0; }, 3000);
+            }
+            if (secretClickCount >= 5) {
+                clearTimeout(secretClickTimer);
+                secretClickCount = 0;
+                openAdminPage();
+            }
+        }
+
+        // 🖥️ লেআউট চেঞ্জ মেকানিজম (১-কলম বা ২-কলম)
+        function toggleLayout() {
+            currentLayout = (currentLayout === 'double') ? 'single' : 'double';
+            localDB.set('app_layout', currentLayout);
+            applyLayout();
+        }
+
+        function applyLayout() {
+            const toggleBtn = document.getElementById('layout-toggle-btn');
+            if (currentLayout === 'double') {
+                videoContainer.className = 'video-grid layout-double';
+                toggleBtn.innerHTML = '<i class="fa-solid fa-table-cells-large"></i>';
+            } else {
+                videoContainer.className = 'video-grid layout-single';
+                toggleBtn.innerHTML = '<i class="fa-solid fa-square"></i>';
+            }
+        }
+
+        // থিম কালার স্ক্রিনে প্রয়োগ করা
+        function applyThemeColors(theme) {
+            if(theme.bg) document.documentElement.style.setProperty('--bg-color', theme.bg);
+            if(theme.accent) document.documentElement.style.setProperty('--accent-color', theme.accent);
+            if(theme.card) document.documentElement.style.setProperty('--card-bg', theme.card);
+            if(theme.nav) document.documentElement.style.setProperty('--nav-bg', theme.nav);
+
+            document.getElementById('thm-bg-code').value = theme.bg || '';
+            document.getElementById('thm-accent-code').value = theme.accent || '';
+            document.getElementById('thm-card-code').value = theme.card || '';
+            document.getElementById('thm-nav-code').value = theme.nav || '';
+        }
+
+        // নোটিশ রেন্ডার করা
+        function renderNotice(notice) {
+            document.getElementById('notice-text').innerText = notice.text || "";
+            document.getElementById('notice-bar').style.display = (notice.status === 'show') ? 'block' : 'none';
+            document.getElementById('adm-notice-status').value = notice.status || 'hide';
+            document.getElementById('adm-notice-text').value = notice.text || '';
+        }
+
+        // ক্যাটাগরি রেন্ডার করা (হোম এবং এডমিন উভয় জায়গায়)
+        function renderCategories() {
+            topCategoryBar.innerHTML = `<button class="category-chip ${currentQuery===''?'active':''}" onclick="changeCategory('', this)">সব ভিডিও</button>`;
+            sidebarCategories.innerHTML = `<button class="category-item ${currentQuery===''?'active':''}" onclick="changeCategory('', this)"><i class="fa-solid fa-house"></i> সব ভিডিও</button>`;
+            
+            const admCatList = document.getElementById('adm-cat-list');
+            admCatList.innerHTML = '';
+
+            categoryList.forEach(cat => {
+                // টপ স্ক্রল চিপস
+                const chip = document.createElement('button');
+                chip.className = `category-chip ${currentQuery === cat.name ? 'active' : ''}`;
+                chip.innerText = cat.name;
+                chip.onclick = function() { changeCategory(cat.name, chip); };
+                topCategoryBar.appendChild(chip);
+
+                // সাইডবার ক্যাটাগরি
+                const item = document.createElement('button');
+                item.className = `category-item ${currentQuery === cat.name ? 'active' : ''}`;
+                item.innerHTML = `<i class="fa-solid fa-folder"></i> ${cat.name}`;
+                item.onclick = function() { changeCategory(cat.name, item); };
+                sidebarCategories.appendChild(item);
+
+                // এডমিন প্যানেল লিস্ট
+                const row = document.createElement('div');
+                row.className = 'admin-list-row';
+                row.innerHTML = `<span>${cat.name}</span><button class="delete-btn" onclick="deleteCategory('${cat.id}')"><i class="fa-solid fa-trash"></i></button>`;
+                admCatList.appendChild(row);
+            });
+        }
+
+        // সোশ্যাল মিডিয়া মেনু রেন্ডার করা (হোম এবং এডমিন উভয় জায়গায়)
+        function renderSocialMenu() {
+            sidebarSocialMenu.innerHTML = '';
+            const admSocList = document.getElementById('adm-soc-list');
+            admSocList.innerHTML = '';
+
+            socialList.forEach(soc => {
+                // ইউজার ইন্টারফেস সোশ্যাল বাটন
+                const linkBtn = document.createElement('a');
+                linkBtn.className = 'social-menu-item';
+                linkBtn.href = soc.url;
+                linkBtn.target = "_blank";
+                linkBtn.innerHTML = `<i class="fa-solid fa-link"></i> ${soc.name}`;
+                sidebarSocialMenu.appendChild(linkBtn);
+
+                // এডমিন প্যানেল লিস্ট
+                const row = document.createElement('div');
+                row.className = 'admin-list-row';
+                row.innerHTML = `<div><strong>${soc.name}</strong><br><small style="color:#aaa;">${soc.url}</small></div>
+                                 <button class="delete-btn" onclick="deleteSocial('${soc.id}')"><i class="fa-solid fa-trash"></i></button>`;
+                admSocList.appendChild(row);
+            });
+        }
+
+        // Firebase রিয়েলটাইম লিসেনার (যদি ফায়ারবেস অ্যাক্টিভ থাকে)
+        function listenToFirebase() {
+            db.collection("settings").doc("theme").onSnapshot(doc => {
+                if(doc.exists) { themeData = doc.data(); applyThemeColors(themeData); localDB.set('theme_data', themeData); }
+            });
+            db.collection("settings").doc("adsterra").onSnapshot(doc => {
+                if(doc.exists) { currentAdsterraLink = doc.data().url || ''; document.getElementById('adm-ad-link').value = currentAdsterraLink; localDB.set('adsterra_url', currentAdsterraLink); }
+            });
+            db.collection("settings").doc("notice").onSnapshot(doc => {
+                if(doc.exists) { noticeData = doc.data(); renderNotice(noticeData); localDB.set('notice_data', noticeData); }
+            });
+            db.collection("categories").orderBy("createdAt", "asc").onSnapshot(snapshot => {
+                categoryList = [];
+                snapshot.forEach(doc => { categoryList.push({ id: doc.id, name: doc.data().name }); });
+                renderCategories();
+                localDB.set('categories_list', categoryList);
+            });
+            db.collection("socials").onSnapshot(snapshot => {
+                socialList = [];
+                snapshot.forEach(doc => { socialList.push({ id: doc.id, name: doc.data().name, url: doc.data().url }); });
+                renderSocialMenu();
+                localDB.set('socials_list', socialList);
+            });
+        }
+
+        // ==========================================
+        // 🌐 ইউটিউব ডাটা প্রসেসিং মেকানিজম
+        // ==========================================
+        async function fetchVideos(isNewSearch = false) {
+            if(API_KEY === 'YOUR_YOUTUBE_API_KEY') return;
+            loadingText.style.display = 'block';
+            loadMoreBtn.style.display = 'none';
+
+            if (isNewSearch) { videoContainer.innerHTML = ''; nextPageToken = ''; }
+
+            let url = '';
+            if (currentQuery === '') {
+                document.getElementById('grid-header').innerText = "বাংলাদেশী ট্রেন্ডিং ভিডিও";
+                url = `https://www.googleapis.com/youtube/v3/videos?key=${API_KEY}&part=snippet&chart=mostPopular&regionCode=BD&maxResults=20`;
+            } else {
+                document.getElementById('grid-header').innerText = `টপিক: "${currentQuery}"`;
+                url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&part=snippet&type=video&regionCode=BD&q=${encodeURIComponent(currentQuery)}&maxResults=20`;
+            }
+            if (nextPageToken) url += `&pageToken=${nextPageToken}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.items && data.items.length > 0) {
+                    displayVideos(data.items);
+                    nextPageToken = data.nextPageToken || '';
+                    loadMoreBtn.style.display = nextPageToken ? 'inline-block' : 'none';
+                } else {
+                    loadingText.innerText = "কোনো ভিডিও পাওয়া যায়নি।";
+                }
+            } catch (error) {
+                loadingText.innerText = "ভিডিও লোড সমস্যা হয়েছে।";
+            } finally {
+                if(nextPageToken || videoContainer.children.length > 0) loadingText.style.display = 'none';
+            }
+        }
+
+        function displayVideos(videos) {
+            videos.forEach(item => {
+                const videoId = item.id.videoId || item.id;
+                if (typeof item.id === 'object' && item.id.kind !== 'youtube#video') return; 
+
+                const title = item.snippet.title;
+                const thumbnail = item.snippet.thumbnails.high.url;
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
+                videoCard.setAttribute('onclick', `handleVideoClick('${videoId}', \`${title.replace(/'/g, "\\'")}\`)`);
+                videoCard.innerHTML = `
+                    <div class="thumbnail-box"><img src="${thumbnail}" alt="${title}"></div>
+                    <div class="video-details"><h3 class="video-title-text">${title}</h3></div>
+                `;
+                videoContainer.appendChild(videoCard);
+            });
+        }
+
+        // 🎯 ১ম ক্লিকে অ্যাড এবং ২য় ক্লিকে সুরক্ষিত ভিডিও প্লেয়ার
+        function handleVideoClick(videoId, title) {
+            if (!currentAdsterraLink || currentAdsterraLink.trim() === "") {
+                openVideoPlayer(videoId, title);
+                return;
+            }
+
+            if (!adClickHistory[videoId]) {
+                adClickHistory[videoId] = true; 
+                window.open(currentAdsterraLink, '_blank');
+            } else {
+                openVideoPlayer(videoId, title);
+            }
+        }
+
+        // প্লেয়ার পেজ চালু
+        function openVideoPlayer(videoId, title) {
+            document.getElementById('playing-title').innerText = title;
+            iframeTarget.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&controls=1&showinfo=0&iv_load_policy=3" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            customPlayerPage.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            fetchRelatedVideos(title);
+        }
+
+        function closeVideoPlayer() {
+            customPlayerPage.style.display = 'none';
+            iframeTarget.innerHTML = '';
+            document.body.style.overflow = 'auto';
+        }
+
+        // সম্পর্কিত ভিডিও
+        async function fetchRelatedVideos(title) {
+            const container = document.getElementById('related-videos-container');
+            container.innerHTML = "<div style='color:#aaa;'>লোডিং সম্পর্কিত ভিডিও...</div>";
+            const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&part=snippet&type=video&regionCode=BD&q=${encodeURIComponent(title)}&maxResults=8`;
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                container.innerHTML = '';
+                if(data.items && data.items.length > 0) {
+                    data.items.forEach(item => {
+                        const rId = item.id.videoId;
+                        if(!rId) return;
+                        const rTitle = item.snippet.title;
+                        const rThumb = item.snippet.thumbnails.medium.url;
+
+                        const rCard = document.createElement('div');
+                        rCard.className = 'related-card';
+                        rCard.setAttribute('onclick', `openVideoPlayer('${rId}', \`${rTitle.replace(/'/g, "\\'")}\`)`);
+                        rCard.innerHTML = `
+                            <img class="related-thumb" src="${rThumb}" alt="${rTitle}">
+                            <div class="related-details"><h4 class="related-title">${rTitle}</h4></div>
+                        `;
+                        container.appendChild(rCard);
+                    });
+                } else {
+                    container.innerHTML = "<div style='color:#aaa;'>সম্পর্কিত কোনো ভিডিও পাওয়া যায়নি।</div>";
+                }
+            } catch (err) {
+                container.innerHTML = "<div style='color:#aaa;'>লোডে সমস্যা হয়েছে।</div>";
+            }
+        }
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            document.getElementById('overlay').style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
+
+        function changeCategory(topic, element) {
+            currentQuery = topic; 
+            fetchVideos(true); 
+            renderCategories(); // অ্যাক্টিভ ক্লাস রিম্যাপিং
+            if(sidebar.classList.contains('open')) toggleSidebar();
+        }
+
+        function searchVideos() { currentQuery = document.getElementById('search-input').value.trim(); fetchVideos(true); }
+        function loadMore() { fetchVideos(false); }
+
+        // ==========================================
+        // 👑 এডমিন প্যানেল কন্ট্রোল মেকানিজম (কাজ করবে ১০০%)
+        // ==========================================
+        function openAdminPage() {
+            document.getElementById('admin-page').style.display = 'block';
+            document.getElementById('admin-auth-screen').style.display = 'flex';
+            document.getElementById('admin-dashboard-screen').style.display = 'none';
+        }
+
+        function closeAdminPage() { document.getElementById('admin-page').style.display = 'none'; }
+
+        function verifyAdminPassword() {
+            if(document.getElementById('admin-password').value === MASTER_PASSWORD) {
+                document.getElementById('admin-auth-screen').style.display = 'none';
+                document.getElementById('admin-dashboard-screen').style.display = 'flex';
+                // এডমিন ইনপুটগুলো আপডেট করা
+                document.getElementById('adm-ad-link').value = currentAdsterraLink;
+            } else {
+                alert("ভুল এডমিন পাসওয়ার্ড!");
+            }
+        }
+
+        function switchAdminTab(tabId, btn) {
+            document.querySelectorAll('.admin-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // 🎯 ১. সম্পূর্ণ আলাদা অ্যাড লিংক সেভ ফাংশন
+        async function saveAdLinkOnly() {
+            const adUrl = document.getElementById('adm-ad-link').value.trim();
+            currentAdsterraLink = adUrl;
+            localDB.set('adsterra_url', currentAdsterraLink);
+
+            if(isFirebaseActive) {
+                await db.collection("settings").doc("adsterra").set({ url: adUrl });
+            }
+            alert("আপনার অ্যাড লিংকটি সফলভাবে সেভ হয়েছে!");
+        }
+
+        // ২. নোটিশ বোর্ড সেভার
+        async function saveNoticeSettings() {
+            const status = document.getElementById('adm-notice-status').value;
+            const text = document.getElementById('adm-notice-text').value.trim();
+            
+            noticeData = { status, text };
+            localDB.set('notice_data', noticeData);
+            renderNotice(noticeData);
+
+            if(isFirebaseActive) {
+                await db.collection("settings").doc("notice").set(noticeData);
+            }
+            alert("নোটিশ ডাটা সফলভাবে সেভ হয়েছে!");
+        }
+
+        // ৩. থিম কালার সেভার
+        async function saveThemeColors() {
+            const bg = document.getElementById('thm-bg-code').value.trim();
+            const accent = document.getElementById('thm-accent-code').value.trim();
+            const card = document.getElementById('thm-card-code').value.trim();
+            const nav = document.getElementById('thm-nav-code').value.trim();
+
+            themeData = { bg, accent, card, nav };
+            localDB.set('theme_data', themeData);
+            applyThemeColors(themeData);
+
+            if(isFirebaseActive) {
+                await db.collection("settings").doc("theme").set(themeData);
+            }
+            alert("থিম কালার সেভ হয়েছে!");
+        }
+
+        // ৪. ক্যাটাগরি যোগ ও বাদ
+        async function addCategory() {
+            const name = document.getElementById('adm-cat-name').value.trim();
+            if(!name) return;
+
+            const newId = 'cat_' + Date.now();
+            categoryList.push({ id: newId, name: name });
+            localDB.set('categories_list', categoryList);
+            renderCategories();
+
+            if(isFirebaseActive) {
+                await db.collection("categories").doc(newId).set({ name: name, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            }
+            document.getElementById('adm-cat-name').value = '';
+        }
+
+        async function deleteCategory(id) {
+            if(!confirm("ক্যাটাগরি মুছে ফেলতে চান?")) return;
+
+            categoryList = categoryList.filter(cat => cat.id !== id);
+            localDB.set('categories_list', categoryList);
+            renderCategories();
+
+            if(isFirebaseActive) {
+                await db.collection("categories").doc(id).delete();
+            }
+        }
+
+        // ৫. সোশ্যাল মিডিয়া যোগ ও বাদ
+        async function addSocial() {
+            const name = document.getElementById('adm-soc-name').value.trim();
+            const url = document.getElementById('adm-soc-url').value.trim();
+            if(!name || !url) { alert("দয়া করে সঠিক নাম ও লিংক দিন!"); return; }
+
+            const newId = 'soc_' + Date.now();
+            socialList.push({ id: newId, name: name, url: url });
+            localDB.set('socials_list', socialList);
+            renderSocialMenu();
+
+            if(isFirebaseActive) {
+                await db.collection("socials").doc(newId).set({ name: name, url: url });
+            }
+            document.getElementById('adm-soc-name').value = '';
+            document.getElementById('adm-soc-url').value = '';
+            alert("সোশ্যাল বাটন সফলভাবে যুক্ত হয়েছে!");
+        }
+
+        async function deleteSocial(id) {
+            if(!confirm("এই সোশ্যাল লিংকটি কি ডিলিট করতে চান?")) return;
+
+            socialList = socialList.filter(soc => soc.id !== id);
+            localDB.set('socials_list', socialList);
+            renderSocialMenu();
+
+            if(isFirebaseActive) {
+                await db.collection("socials").doc(id).delete();
+            }
+        }
+
+        document.getElementById('search-input').addEventListener('keypress', function (e) { if (e.key === 'Enter') searchVideos(); });
+    </script>
+</body>
+  </html>
